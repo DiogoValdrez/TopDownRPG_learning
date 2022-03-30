@@ -12,6 +12,9 @@ public class GameManager : MonoBehaviour
         if(GameManager.instance != null)
         {
             Destroy(gameObject);
+            Destroy(player.gameObject);
+            Destroy(floatingTextManager.gameObject);
+
             return;
         }
 
@@ -37,8 +40,9 @@ public class GameManager : MonoBehaviour
 
     //References 
     public Player player;
-    // public weapon, ...
+    public Weapon weapon;
     public FloatingTextManager floatingTextManager;
+    public RectTransform hitPointBar;//there is 2 ways to dont destry on load, just say dontdestroyonload in awayke, or this way
 
     //Logic
     public int pesos;
@@ -48,6 +52,78 @@ public class GameManager : MonoBehaviour
     public void ShowText(string msg, int fontSize, Color color, Vector3 position, Vector3 motion, float duration)
     {
         floatingTextManager.Show(msg, fontSize, color, position, motion, duration);
+    }
+
+    // Upgrade Weapon
+    public bool TryUpgradeWeapon()
+    {
+        // is the weapon max lvl?
+        if(weaponPrices.Count <= weapon.weaponLevel)
+        {
+            return false;
+        }
+        if(pesos >= weaponPrices[weapon.weaponLevel])
+        {
+            pesos -= weaponPrices[weapon.weaponLevel];
+            weapon.UpgradeWeapon();
+            return true;
+        }
+
+        return false;
+    }
+
+    //HITPOINT BAr
+    public void OnHitPointChange()
+    {
+        float ratio = (float)player.hitpoint / (float)player.maxHitpoint;
+        hitPointBar.localScale = new Vector3(1, ratio, 1);
+    }
+
+    // Experience System
+    public int GetCurrentLevel()
+    {
+        int r = 0;
+        int add = 0;
+
+        while(experience >= add)
+        {
+            add += xpTable[r];
+            r++;
+
+            if(r == xpTable.Count)// MAx level
+            {
+                return r;
+            }
+        }
+
+        return r;
+    }
+    public int GetXpToLevel(int level)
+    {
+        int r = 0;
+        int xp = 0;
+
+        while (r < level)
+        {
+            xp += xpTable[r];
+            r++;
+        }
+
+        return xp;
+    }
+    public void GrantXp(int xp)
+    {
+        int currLevel = GetCurrentLevel();
+        experience += xp;
+        if (currLevel < GetCurrentLevel())
+        {
+            OnLevelUp();
+        }
+    }
+    public void OnLevelUp()
+    {
+        Debug.Log("LVL UP");
+        player.OnLevelUp();
     }
 
     //Save state
@@ -65,7 +141,7 @@ public class GameManager : MonoBehaviour
         s += "0" + "|";
         s += pesos.ToString() + "|";
         s += experience.ToString() + "|";
-        s += "0";
+        s += weapon.weaponLevel.ToString();
 
         PlayerPrefs.SetString("SaveState", s);
     }
@@ -81,10 +157,17 @@ public class GameManager : MonoBehaviour
         }
 
         string[] data = PlayerPrefs.GetString("SaveState").Split('|');
-        //Change player skin
+        
         pesos = int.Parse(data[1]);
         experience = int.Parse(data[2]);
-        //Change weapon Level
+        if(GetCurrentLevel() != 1)
+        {
+            player.SetLevel(GetCurrentLevel());
+        }
+        
+        weapon.SetWeaponLevel(int.Parse(data[3]));
+
+        player.transform.position = GameObject.Find("SpawnPoint").transform.position;
 
         Debug.Log("LoadState");
     }

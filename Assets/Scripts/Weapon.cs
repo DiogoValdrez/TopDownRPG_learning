@@ -3,23 +3,29 @@ using UnityEngine;
 public class Weapon : Collidable
 {
     // Damage struct
-    public int damagePoint = 1;
-    public float pushForce = 2.0f;
+    public int[] damagePoint = { 1, 2, 3, 4, 5, 6, 7 };
+    public float[] pushForce = { 2.0f , 2.2f, 2.5f, 3f, 3.2f, 3.6f, 4f};
 
     // Upgrade
     public int weaponLevel = 0;
     private SpriteRenderer spriteRenderer;// we do this so we can change the apperance of the sword
 
     // Swing
+    private Animator anim;
     private float cooldown = 0.5f;
     private float lastSwing;
 
-    protected override void Start() // protected so it only interfires with the lower classes in hierarqy
+    // Awake executes before start and we put sprite renderer here so our game manager have a reference to this
+    // Another way was puting the sprite renderer public
+    private void Awake()
     {
-        base.Start(); // this runs the original code
         spriteRenderer = GetComponent<SpriteRenderer>(); // we do this so we can really have access to the sprite renderer
     }
-
+    protected override void Start() // protected so it only interfires with the lower classes in hierarqy
+    {
+        base.Start(); // this runs the original code    
+        anim = GetComponent<Animator>();
+    }
     protected override void Update()
     {
         base.Update();
@@ -33,7 +39,6 @@ public class Weapon : Collidable
             }
         }
     }
-
     protected override void OnColide(Collider2D coll)
     {
         if(coll.tag == "Fighter")
@@ -44,9 +49,9 @@ public class Weapon : Collidable
             // Create new damage object, then we will send it to the fighter we hit
             Damage dmg = new Damage
             {
-                damageAmount = damagePoint,
+                damageAmount = damagePoint[weaponLevel],
                 origin = transform.position,
-                pushForce = pushForce
+                pushForce = pushForce[weaponLevel]
             };
             coll.SendMessage("ReceiveDamage", dmg);      
         }
@@ -54,7 +59,17 @@ public class Weapon : Collidable
     }
     private void Swing()
     {
-        Debug.Log("Swing");
+        anim.SetTrigger("Swing");
+    }
+    public void UpgradeWeapon()
+    {
+        weaponLevel++;
+        spriteRenderer.sprite = GameManager.instance.weaponSprites[weaponLevel];
+    }
+    public void SetWeaponLevel(int level)
+    {
+        weaponLevel = level;
+        spriteRenderer.sprite = GameManager.instance.weaponSprites[weaponLevel];
     }
 
-}//3:26:32
+}

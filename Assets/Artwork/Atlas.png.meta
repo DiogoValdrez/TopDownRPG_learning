@@ -553,7 +553,7 @@ TextureImporter:
     second: pilar_0
   - first:
       213: -1623517267125872434
-    second: Atlas_191
+    second: menu_0
   - first:
       213: -1491367757287608160
     second: Atlas_192
@@ -760,7 +760,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 99
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -4639,7 +4639,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Atlas_191
+      name: menu_0
       rect:
         serializedVersion: 2
         x: 224
